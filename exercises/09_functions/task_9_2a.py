@@ -42,8 +42,30 @@ trunk_mode_template = [
     "switchport trunk allowed vlan",
 ]
 
-trunk_config = {
+trunk_config = { 
     "FastEthernet0/1": [10, 20, 30],
     "FastEthernet0/2": [11, 30],
     "FastEthernet0/4": [17],
 }
+
+def generate_trunk_dict(intf_vlan_mapping, trunk_template):
+    """
+    intf_vlan_mapping - словарь с соответствием интерфейс-VLAN такого вида:
+        {'FastEthernet0/12':10,
+         'FastEthernet0/14':11,
+         'FastEthernet0/16':17}
+    access_template - список команд для порта в режиме access
+
+    Возвращает список всех портов в режиме access с конфигурацией на основе шаблона
+    """
+    trunk_dict = {}
+    for intf, vlans in intf_vlan_mapping.items():
+      list_config = []
+      for command in trunk_template:
+        if command.endswith('allowed vlan'):
+           vlans_str = ",".join([str(vl) for vl in vlans])
+           list_config.append(f"{command} {vlans_str}")
+        else:
+           list_config.append(f"{command}")  
+      trunk_dict[intf] = list_config   
+    return trunk_dict
